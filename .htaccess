@@ -1,0 +1,244 @@
+# Ethiopian Marketplace - Apache Configuration
+# Main .htaccess file for URL rewriting and security
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Security Headers
+<IfModule mod_headers.c>
+    # HTTPS Redirect
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+    
+    # XSS Protection
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Content Type Options
+    Header set X-Content-Type-Options "nosniff"
+    
+    # Frame Options
+    Header set X-Frame-Options "SAMEORIGIN"
+    
+    # Referrer Policy
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Content Security Policy
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self'; frame-src 'self';"
+    
+    # Remove Server Information
+    Header unset Server
+    Header unset X-Powered-By
+</IfModule>
+
+# Prevent access to sensitive files
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|inc|bak|sql)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Prevent access to directories
+Options -Indexes
+
+# Prevent access to config and includes
+RedirectMatch 404 /config/.*
+RedirectMatch 404 /backend/includes/.*
+RedirectMatch 404 /backend/classes/.*
+
+# Force HTTPS (uncomment in production)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Remove www (uncomment if needed)
+# RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+# RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
+
+# Main URL Routing
+
+# API Routes
+RewriteRule ^api/(.*)$ backend/api/$1 [L,QSA]
+
+# Static Assets
+RewriteRule ^assets/(.*)$ assets/$1 [L]
+RewriteRule ^frontend/(.*)$ frontend/$1 [L]
+
+# Authentication Pages
+RewriteRule ^login/?$ frontend/login.php [L,QSA]
+RewriteRule ^register/?$ frontend/register.php [L,QSA]
+RewriteRule ^logout/?$ frontend/logout.php [L,QSA]
+RewriteRule ^forgot-password/?$ frontend/forgot-password.php [L,QSA]
+RewriteRule ^reset-password/?$ frontend/reset-password.php [L,QSA]
+RewriteRule ^verify-email/?$ frontend/verify-email.php [L,QSA]
+
+# User Dashboard
+RewriteRule ^dashboard/?$ frontend/dashboard/index.php [L,QSA]
+RewriteRule ^dashboard/(.*)$ frontend/dashboard/$1.php [L,QSA]
+
+# Profile Pages
+RewriteRule ^profile/?$ frontend/profile/index.php [L,QSA]
+RewriteRule ^profile/(.*)$ frontend/profile/$1.php [L,QSA]
+
+# Product Pages
+RewriteRule ^products/?$ frontend/products/index.php [L,QSA]
+RewriteRule ^products/([a-zA-Z0-9-]+)/?$ frontend/products/product.php?slug=$1 [L,QSA]
+RewriteRule ^search/?$ frontend/products/search.php [L,QSA]
+
+# Category Pages
+RewriteRule ^categories/?$ frontend/categories/index.php [L,QSA]
+RewriteRule ^categories/([a-zA-Z0-9-]+)/?$ frontend/categories/category.php?slug=$1 [L,QSA]
+
+# Shopping Cart & Checkout
+RewriteRule ^cart/?$ frontend/cart/index.php [L,QSA]
+RewriteRule ^checkout/?$ frontend/checkout/index.php [L,QSA]
+RewriteRule ^checkout/(.*)$ frontend/checkout/$1.php [L,QSA]
+
+# Order Pages
+RewriteRule ^orders/?$ frontend/orders/index.php [L,QSA]
+RewriteRule ^orders/([a-zA-Z0-9-]+)/?$ frontend/orders/order.php?order_number=$1 [L,QSA]
+RewriteRule ^track-order/?$ frontend/orders/track.php [L,QSA]
+
+# Wishlist
+RewriteRule ^wishlist/?$ frontend/wishlist/index.php [L,QSA]
+
+# Seller Pages
+RewriteRule ^sellers/?$ frontend/sellers/index.php [L,QSA]
+RewriteRule ^sellers/([0-9]+)/?$ frontend/sellers/seller.php?id=$1 [L,QSA]
+RewriteRule ^become-seller/?$ frontend/sellers/register.php [L,QSA]
+
+# Seller Dashboard
+RewriteRule ^seller/?$ frontend/seller/dashboard.php [L,QSA]
+RewriteRule ^seller/(.*)$ frontend/seller/$1.php [L,QSA]
+
+# Admin Panel
+RewriteRule ^admin/?$ frontend/admin/index.php [L,QSA]
+RewriteRule ^admin/(.*)$ frontend/admin/$1.php [L,QSA]
+
+# Support & Help
+RewriteRule ^support/?$ frontend/support/index.php [L,QSA]
+RewriteRule ^support/(.*)$ frontend/support/$1.php [L,QSA]
+RewriteRule ^help/?$ frontend/help/index.php [L,QSA]
+RewriteRule ^faq/?$ frontend/help/faq.php [L,QSA]
+RewriteRule ^contact/?$ frontend/contact.php [L,QSA]
+
+# Static Pages
+RewriteRule ^about/?$ frontend/about.php [L,QSA]
+RewriteRule ^terms/?$ frontend/terms.php [L,QSA]
+RewriteRule ^privacy/?$ frontend/privacy.php [L,QSA]
+RewriteRule ^shipping/?$ frontend/shipping.php [L,QSA]
+RewriteRule ^returns/?$ frontend/returns.php [L,QSA]
+
+# Homepage (must be last)
+RewriteRule ^$ frontend/index.php [L,QSA]
+
+# Handle 404 errors
+ErrorDocument 404 /frontend/404.php
+
+# Compression
+<IfModule mod_deflate.c>
+    # Compress HTML, CSS, JavaScript, Text, XML and fonts
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font
+    AddOutputFilterByType DEFLATE application/x-font-opentype
+    AddOutputFilterByType DEFLATE application/x-font-otf
+    AddOutputFilterByType DEFLATE application/x-font-truetype
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE font/otf
+    AddOutputFilterByType DEFLATE font/ttf
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE image/x-icon
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    
+    # Remove browser bugs (only needed for really old browsers)
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    Header append Vary User-Agent
+</IfModule>
+
+# Browser Caching
+<IfModule mod_expires.c>
+    ExpiresActive on
+    
+    # Images
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    # CSS and JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    
+    # Fonts
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType application/font-woff "access plus 1 year"
+    
+    # HTML and XML
+    ExpiresByType text/html "access plus 1 hour"
+    ExpiresByType text/xml "access plus 1 hour"
+    ExpiresByType application/xml "access plus 1 hour"
+    ExpiresByType application/json "access plus 1 hour"
+    
+    # Default
+    ExpiresDefault "access plus 1 week"
+</IfModule>
+
+# Cache Control Headers
+<IfModule mod_headers.c>
+    # Cache static assets
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|otf)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+    
+    # Don't cache HTML files
+    <FilesMatch "\.(html|htm|php)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# PHP Settings
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_vars 3000
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log /var/log/php_errors.log
+</IfModule>
+
+# Prevent hotlinking
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?ethiopianmarketplace\.com [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?google\. [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?bing\. [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?yahoo\. [NC]
+RewriteRule \.(jpg|jpeg|png|gif|webp)$ /assets/images/no-hotlink.jpg [R,L]
+
+# Block bad bots and scrapers
+RewriteCond %{HTTP_USER_AGENT} (ahrefs|alexibot|majestic|mj12bot|rogerbot|semrushbot) [NC]
+RewriteRule .* - [F,L]
+
+# Rate limiting (if mod_security is available)
+<IfModule mod_security.c>
+    SecRule IP:bf_counter "@gt 20" "phase:1,block,msg:'Rate limiting'"
+    SecAction "phase:1,initcol:ip=%{REMOTE_ADDR},pass,nolog,id:1"
+    SecRule IP:bf_counter "@lt 1" "phase:1,pass,setvar:ip.bf_counter=+1,nolog,id:2"
+</IfModule>

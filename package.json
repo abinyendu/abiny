@@ -1,0 +1,68 @@
+{
+  "name": "ethiopian-marketplace",
+  "version": "1.0.0",
+  "description": "Premium e-commerce marketplace for Ethiopian products targeting local, African, and global buyers",
+  "main": "frontend/index.php",
+  "scripts": {
+    "dev": "php -S localhost:8000 -t .",
+    "build": "echo 'Building assets...' && npm run minify-css && npm run minify-js",
+    "minify-css": "cleancss -o frontend/css/main.min.css frontend/css/main.css frontend/css/components.css frontend/css/responsive.css frontend/css/auth.css",
+    "minify-js": "uglifyjs frontend/js/main.js frontend/js/carousel.js -o frontend/js/main.min.js",
+    "watch": "npm-watch",
+    "test": "echo 'Running tests...' && php backend/tests/run-tests.php",
+    "lint": "echo 'Linting code...' && php -l backend/classes/*.php && php -l backend/api/*.php",
+    "deploy": "echo 'Deploying to production...' && npm run build && rsync -avz --exclude 'node_modules' --exclude '.git' . user@server:/var/www/html/",
+    "backup": "echo 'Creating backup...' && mysqldump -u root -p ethiopian_marketplace > backups/db_$(date +%Y%m%d_%H%M%S).sql",
+    "setup": "echo 'Setting up project...' && php backend/setup/install.php"
+  },
+  "watch": {
+    "build": {
+      "patterns": [
+        "frontend/css",
+        "frontend/js"
+      ],
+      "extensions": "css,js",
+      "quiet": false
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ethiopian-marketplace.git"
+  },
+  "keywords": [
+    "ecommerce",
+    "marketplace",
+    "ethiopia",
+    "african-products",
+    "coffee",
+    "spices",
+    "handicrafts",
+    "php",
+    "mysql",
+    "responsive"
+  ],
+  "author": "Ethiopian Marketplace Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/your-username/ethiopian-marketplace/issues"
+  },
+  "homepage": "https://ethiopianmarketplace.com",
+  "devDependencies": {
+    "clean-css-cli": "^5.6.2",
+    "uglify-js": "^3.17.4",
+    "npm-watch": "^0.11.0",
+    "eslint": "^8.50.0",
+    "stylelint": "^15.10.3"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=16.0.0",
+    "php": ">=8.1.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}
